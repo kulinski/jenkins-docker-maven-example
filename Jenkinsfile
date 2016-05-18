@@ -8,7 +8,7 @@ node {
 
   // Build using a plain docker container, not our local Dockerfile
   docker.image('jimschubert/8-jdk-alpine-mvn').inside('-u root:root') {
-    sh 'mvn package'
+    sh 'mvn -B package'
 	// package goal also runs tests      
   }
         
