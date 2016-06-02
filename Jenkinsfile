@@ -20,5 +20,7 @@ node {
     
    stage name: 'Deploy Image', concurrency: 1
         // All the tests passed. We can now retag and push the 'latest' image
-   //     pcImg.push('latest');    
+    docker.withRegistry('https://nexus.doyouevenco.de', 'nexus-admin') {
+       img.push('latest')
+    }
 }
