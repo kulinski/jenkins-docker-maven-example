@@ -5,8 +5,8 @@
     "Update": "true"
   },
   "Authentication": {
-    "Bucket": "cademobs",
-    "Key": ".dockercfg"
+    "Bucket": "cai-nexus-creds",
+    "Key": "creds.config"
   },
   "Ports": [
     {
