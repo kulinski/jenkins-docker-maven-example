@@ -6,13 +6,13 @@ A spring boot enabled hello world application
 
 - Directly using maven
 
-	mvn spring-boot:run
+	`mvn spring-boot:run`
 
 
 - Using executable jar file
 
-	mvn clean package
-	java -jar target/helloworld-1.0-SNAPSHOT.jar
+	`mvn clean package`
+	`java -jar target/helloworld-1.0-SNAPSHOT.jar`
 
 ## Dockerfile
 
