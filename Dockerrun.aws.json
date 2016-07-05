@@ -1,0 +1,16 @@
+{
+  "AWSEBDockerrunVersion": "1",
+  "Image": {
+    "Name": "nexus.doyouevenco.de/jenkins-docker-maven-example:latest"
+    "Update": "true"
+  },
+  "Authentication": {
+    "Bucket": "cademobs",
+    "Key": ".dockercfg"
+  },
+  "Ports": [
+    {
+      "ContainerPort": "8090"
+    }
+  ]
+}
