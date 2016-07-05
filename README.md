@@ -23,5 +23,6 @@ Dockerfile will build self-running container *after* a maven install is run
 
 1. run `mvn package` - builds, tests and packages
 3. run `docker build` for the releasable docker container
-4. push docker container
-5. deploy docker contianer
+4. push docker container to Nexus
+5. create Beanstalk env
+6. deploy docker container into Beanstalk
