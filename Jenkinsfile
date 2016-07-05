@@ -3,7 +3,6 @@ def applicationName = "jenkins-docker-maven-example"
 def beanstalkRegion = "us-east-1"
 def beanstalkInstanceProfile = ""
 def beanstalkServiceRole = ""
-def deployVersion = "1.0"
 
 node {
     
@@ -52,7 +51,7 @@ node {
     createBeanstalkEnvironmentsIfUnavailable(applicationName, applicationName, applicationName,
        beanstalkRegion, beanstalkInstanceProfile, beanstalkServiceRole)
     
-    deployToEnvironment(applicationName, deployVersion)
+    deployToEnvironment(applicationName)
     
 }
 
@@ -78,12 +77,12 @@ def createBeanstalkEnvironmentsIfUnavailable(appName, env, cnamePrefix, region, 
     }
 }
 
-def deployToEnvironment(env, version) {
-    echo 'Deploying version ' + version + ' to ' + env
+def deployToEnvironment(env) {
+    echo 'Deploying to ' + env
 
     def ebcliDocker = docker.image("coxauto/aws-ebcli")
     ebcliDocker.inside() {
-        sh 'eb deploy -l ' + version + ' ' + env
+        sh 'eb deploy ' + env
     }
 
     echo 'Completed deployment'
