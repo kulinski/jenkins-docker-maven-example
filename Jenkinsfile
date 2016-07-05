@@ -1,3 +1,10 @@
+
+def applicationName = "jenkins-docker-maven-example"
+def beanstalkRegion = "us-east-1"
+def beanstalkInstanceProfile = ""
+def beanstalkServiceRole = ""
+def deployVersion = "1.0"
+
 node {
     
   stage 'Checkout'
@@ -29,31 +36,55 @@ node {
   }
     
   stage 'Pull Image'
-  // Now let's pull it to test that a pull from Nexus works correctly
+  // Now let's pull it, just to test that a pull from Nexus works correctly
   docker.withRegistry('https://nexus.doyouevenco.de', 'nexus-admin') {
      docker.image("jenkins-docker-maven-example:latest").pull()
   }
   
   stage 'Pull EB deploy container'
-   // use container that has AWS EB CLI installed from a "trusted" source
-   def ebcliDocker = docker.image("kulinski/aws-ebcli")
+   // Check to ensure that we can access the EB deploy commands container
+   def ebcliDocker = docker.image("coxauto/aws-ebcli")
    ebcliDocker.pull()
    
    //Now we deploy
   stage 'Deploy Production to Beanstalk'
-   ebcliDocker.inside() {
-     // sh '''
-     //    ebEnv="prod"
-     //    
-     //    # Check to see if the eb environment exists and then run create or deploy depending
-     //    createCheck=`eb status $ebEnv`
-     //    if [[ -z "${createCheck##*Status*}" ]]; then
-     //       eb deploy $ebEnv
-     //    else
-     //       eb create $ebEnv --instance_profile IAM-3-ElasticBeanstalkEC2InstanceProfile-XXXXXX --service-role IAM-3-ElasticBeanstalkServiceRole-XXXXXX
-     //    fi
-     // '''
-     sh ' eb --version'
-   } 
+  
+    createBeanstalkEnvironmentsIfUnavailable(applicationName, applicationName, applicationName,
+       beanstalkRegion, beanstalkInstanceProfile, beanstalkServiceRole)
     
+    deployToEnvironment(applicationName, deployVersion)
+    
+}
+
+
+def createBeanstalkEnvironmentsIfUnavailable(appName, env, cnamePrefix, region, ip, role) {
+    echo 'Verifying availability of beanstalk app: ' + appName + ' and env: ' + env + ' in region ' + region
+
+    def ebcliDocker = docker.image("coxauto/aws-ebcli")
+
+    ebcliDocker.inside() {
+        sh 'aws elasticbeanstalk describe-environments --region ' + region + ' --application-name ' + appName + ' --query \'Environments[?EnvironmentName==`' + env + '`]\' > env.available'
+    }
+
+    def ebEnvStatus = readFile('env.available');
+
+    if (ebEnvStatus.contains(env) && ! ebEnvStatus.contains('Terminated')) {
+        echo 'Environment ' + env + ' is available for deployment'
+    } else {
+        echo 'Environment' + env + ' is not available.  Creating beanstalk environment...'
+        ebcliDocker.inside() {
+            sh 'eb create ' + env + ' -c ' + cnamePrefix + ' --sample ' //--instance_profile ' + ip + ' --service-role ' + role
+        }
+    }
+}
+
+def deployToEnvironment(env, version) {
+    echo 'Deploying version ' + version + ' to ' + env
+
+    def ebcliDocker = docker.image("coxauto/aws-ebcli")
+    ebcliDocker.inside() {
+        sh 'eb deploy -l ' + version + ' ' + env
+    }
+
+    echo 'Completed deployment'
 }
